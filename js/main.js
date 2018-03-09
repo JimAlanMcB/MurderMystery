@@ -12,6 +12,10 @@ Possibly have to take clues to random NPC
 NPC's walking (Pathing)
 Insert RPG Elements
 
+(*(( Bugs - 
+After first round of timed, game over no longer works. 
+)))
+
 ...and more thoughts...
 
 
@@ -141,8 +145,7 @@ let init = function () {
 			game.iso.anchor.setTo(0.5, 0);
 		},
 		create: function () {
-
-			// game timer
+		    // game timer
 			if (currentLevel > 1) {
 				totalItemCount += 2;
 			}
@@ -192,6 +195,7 @@ let init = function () {
 			this.timeElapsed = 0;
 
 			if (!freeRoam) {
+
 				this.gameTimer = game.time.events.loop(100, function () {
 					updateTimer();
 
@@ -207,9 +211,17 @@ let init = function () {
 					nextLevel = false;
 					currentItemCount = 0;
 					totalItemCount = 4;
-					currentLevel = 0;
+					currentLevel = 1;
 					speed = 200;
-					game.state.start('Boot');
+					if (!freeRoam) {
+						game.state.start('Boot');
+						freeRoam = false;
+						console.log('Timer Mode Enabled');
+					} else {
+						console.log('Free roam active');
+						game.state.start('Boot');
+						freeRoam = true;
+					}
 
 				}, this);
 				timer.start();
@@ -217,29 +229,29 @@ let init = function () {
 			};
 
 			// Free Roam game mode is so you don't have a timer
-			if (!freeRoam) {
-				let countDownTimer = game.time.create(false);
-				console.log(nextLevel);
 
-				let gameCountDown = countDownTimer.add(Phaser.Timer.SECOND * 30, () => {
+			let countDownTimer = game.time.create(false);
+			
 
-					if (nextLevel == false) {
-						speed = 0;
-						alertTxt = "You didn't find the killer fast enough!!! Game Over.";
-						msgTxt.setText(alertTxt);
-						msgTxt.x = player.x + 80;
-						msgTxt.y = player.y - 20;
+			let gameCountDown = countDownTimer.add(Phaser.Timer.SECOND * 30, () => {
 
-						restartGame();
-						console.log('gameover')
-					} else {
-						//..moving on
-					}
-				}, this);
-				countDownTimer.start();
+				if (!freeRoam) {
+					speed = 0;
+					alertTxt = "You didn't find the killer fast enough!!! Game Over.";
+					msgTxt.setText(alertTxt);
+					msgTxt.x = player.x + 80;
+					msgTxt.y = player.y - 20;
 
-				//....
-			}
+					restartGame();
+					console.log('gameover')
+				} else {
+					//..moving on
+				}
+			}, this);
+			countDownTimer.start();
+
+			//....
+
 
 
 			// set the Background color of our game
@@ -939,7 +951,14 @@ let init = function () {
 							currentLevel += 1;
 							currentItemCount = 0;
 							speed = 200;
-							game.state.start('Boot');
+
+							if (!freeRoam) {
+								game.state.start('Boot');
+								freeRoam = false;
+							} else {
+								game.state.start('Boot');
+								freeRoam = true;
+							}
 						}, this);
 						timer.start();
 
